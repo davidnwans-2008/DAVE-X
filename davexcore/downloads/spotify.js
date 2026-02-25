@@ -45,7 +45,6 @@ async function spotifyCommand(sock, chatId, message) {
             return;
         }
 
-        // Send initial reaction
         await sock.sendMessage(chatId, {
             react: { text: '🔍', key: message.key }
         });
@@ -54,76 +53,41 @@ async function spotifyCommand(sock, chatId, message) {
             text: `✦ *${botName}*\nSearching: ${query}...`
         }, { quoted: fake });
 
-        // Try multiple APIs like in song/play commands
-        const apis = [
-            {
-                url: `https://apiskeith.top/download/spotify?query=${encodeURIComponent(query)}`,
-                parse: (d) => ({
-                    download: d?.result?.download || d?.result?.url || d?.result?.link,
-                    title: d?.result?.title || d?.title,
-                    artist: d?.result?.artist || d?.artist,
-                    cover: d?.result?.cover || d?.result?.thumbnail || d?.cover,
-                    duration: d?.result?.duration || d?.duration
-                })
-            },
-            {
-                url: `https://api.siputzx.my.id/api/d/spotify?query=${encodeURIComponent(query)}`,
-                parse: (d) => ({
-                    download: d?.data?.download || d?.data?.url || d?.data?.link,
-                    title: d?.data?.title,
-                    artist: d?.data?.artist,
-                    cover: d?.data?.cover || d?.data?.thumbnail,
-                    duration: d?.data?.duration
-                })
-            },
-            {
-                url: `https://bk9.fun/download/spotify?q=${encodeURIComponent(query)}`,
-                parse: (d) => ({
-                    download: d?.BK9?.download || d?.BK9?.url || d?.BK9?.link,
-                    title: d?.BK9?.title,
-                    artist: d?.BK9?.artist,
-                    cover: d?.BK9?.cover || d?.BK9?.thumbnail,
-                    duration: d?.BK9?.duration
-                })
-            }
-        ];
-
+        const apiUrl = `https://apiskeith.top/download/spotify?q=${encodeURIComponent(query)}`;
         let result = null;
         let downloadUrl = null;
 
-        for (const api of apis) {
-            try {
-                const res = await tryRequest(() => axios.get(api.url, AXIOS_DEFAULTS));
-                if (res?.data) {
-                    const parsed = api.parse(res.data);
-                    if (parsed.download) {
-                        result = parsed;
-                        downloadUrl = parsed.download;
-                        break;
-                    }
-                }
-            } catch (err) {
-                console.log(`API failed:`, err.message);
-                continue;
+        try {
+            const res = await tryRequest(() => axios.get(apiUrl, AXIOS_DEFAULTS));
+            if (res?.data?.status && res?.data?.result?.track) {
+                const track = res.data.result.track;
+                downloadUrl = track.downloadLink;
+                result = {
+                    title: track.title || track.name,
+                    artist: track.artist,
+                    cover: track.thumbnail,
+                    duration: track.duration,
+                    popularity: track.popularity
+                };
             }
+        } catch (err) {
+            console.log('Spotify API failed:', err.message);
         }
 
         if (!downloadUrl || !result) {
             throw new Error('No results found');
         }
 
-        // Update reaction
         await sock.sendMessage(chatId, {
             react: { text: '⬇️', key: message.key }
         });
 
-        // Build caption
         let caption = `✦ *${botName}* Spotify\n\n`;
         caption += `Title: ${result.title || 'Unknown'}\n`;
         caption += `Artist: ${result.artist || 'Unknown'}\n`;
         if (result.duration) caption += `Duration: ${result.duration}\n`;
+        if (result.popularity) caption += `Popularity: ${result.popularity}\n`;
 
-        // Send thumbnail with caption if available
         if (result.cover) {
             await sock.sendMessage(chatId, { 
                 image: { url: result.cover }, 
@@ -135,7 +99,6 @@ async function spotifyCommand(sock, chatId, message) {
             }, { quoted: fake });
         }
 
-        // Send audio file
         const safeTitle = (result.title || 'spotify').replace(/[\\/:*?"<>|]/g, '');
         await sock.sendMessage(chatId, {
             audio: { url: downloadUrl },
@@ -143,7 +106,6 @@ async function spotifyCommand(sock, chatId, message) {
             fileName: `${safeTitle}.mp3`
         }, { quoted: fake });
 
-        // Success reaction
         await sock.sendMessage(chatId, {
             react: { text: '✅', key: message.key }
         });

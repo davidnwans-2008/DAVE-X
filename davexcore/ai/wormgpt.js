@@ -15,19 +15,20 @@ async function wormgptCommand(sock, chatId, message) {
     }
 
     try {
-        const apiUrl = `https://z7.veloria.my.id/ai/wormgpt?text=${encodeURIComponent(query)}`;
-        const response = await axios.get(apiUrl, {
+        const apiUrl = `https://apiskeith.top/ai/wormgpt?q=${encodeURIComponent(query)}`;
+        const { data } = await axios.get(apiUrl, { 
             timeout: 30000,
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-            }
+            headers: { 
+                'user-agent': 'Mozilla/5.0',
+                'accept': 'application/json'
+            } 
         });
 
-        if (!response.data || !response.data.status || !response.data.result) {
+        if (!data || !data.status || !data.result) {
             throw new Error('Invalid API response');
         }
 
-        const answer = response.data.result.trim();
+        const answer = data.result.trim();
 
         await sock.sendMessage(chatId, { text: `${answer}\n\n- DAVE X` }, { quoted: fake });
 
