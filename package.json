@@ -31,7 +31,7 @@
     "gtts": "^0.2.1",
     "human-readable": "^0.2.1",
     "jimp": "^1.6.0",
-    "jsdecryptor": "^4.0.6"
+    "jsdecryptor": "^4.0.6",
     "moment-timezone": "^0.6.0",
     "mumaker": "^2.0.0",
     "node-cache": "^5.1.2",
