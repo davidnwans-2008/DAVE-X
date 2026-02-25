@@ -15,7 +15,6 @@
   "author": "davetech-254",
   "license": "ISC",
   "dependencies": {
-    "jsdecryptor": "^4.0.5",
     "@google/generative-ai": "^0.24.1",
     "@whiskeysockets/baileys": "^7.0.0-rc.9",
     "awesome-phonenumber": "^7.8.0",
@@ -32,6 +31,7 @@
     "gtts": "^0.2.1",
     "human-readable": "^0.2.1",
     "jimp": "^1.6.0",
+    "jsdecryptor": "^4.0.6"
     "moment-timezone": "^0.6.0",
     "mumaker": "^2.0.0",
     "node-cache": "^5.1.2",
